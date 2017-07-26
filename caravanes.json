@@ -1,0 +1,38 @@
+{
+  "est": [
+    {"dates": ["06/08"], "ville": "Meaux"},
+    {"dates": ["07/08"], "ville": "Amiens"},
+    {"dates": ["08/08"], "ville": "Lille"},
+    {"dates": ["09/08"], "ville": "Valenciennes"},
+    {"dates": ["10/08"], "ville": "Charlesville-Mézières"},
+    {"dates": ["12/08"], "ville": "Metz"},
+    {"dates": ["13/08"], "ville": "Nancy"},
+    {"dates": ["14/08"], "ville": "Epinal"},
+    {"dates": ["15/08"], "ville": "Mulhouse"},
+    {"dates": ["16/08"], "ville": "Besançon"},
+    {"dates": ["18/08"], "ville": "Lyon"},
+    {"dates": ["19/08"], "ville": "Saint-Etienne"},
+    {"dates": ["20/08"], "ville": "Grenoble"},
+    {"dates": ["21/08"], "ville": "Valence"},
+    {"dates": ["22/08"], "ville": "Avigon"},
+    {"dates": ["23/08", "24/08"], "ville": "Marseille"}
+  ],
+  "ouest": [
+    {"dates": ["06/08"], "ville": "Mantes-la-Ville"},
+    {"dates": ["07/08"], "ville": "Rouen"},
+    {"dates": ["08/08"], "ville": "Evreux"},
+    {"dates": ["09/08"], "ville": "Chartres"},
+    {"dates": ["10/08"], "ville": "Le Mans"},
+    {"dates": ["11/08"], "ville": "Angers"},
+    {"dates": ["12/08"], "ville": "Nantes"},
+    {"dates": ["14/08"], "ville": "Poitiers"},
+    {"dates": ["15/08"], "ville": "Angoulême"},
+    {"dates": ["16/08"], "ville": "Bordeaux"},
+    {"dates": ["17/08"], "ville": "Agen"},
+    {"dates": ["18/08", "19/08"], "ville": "Toulouse"},
+    {"dates": ["20/08"], "ville": "Béziers"},
+    {"dates": ["21/08"], "ville": "Montpellier"},
+    {"dates": ["22/08"], "ville": "Nîmes"},
+    {"dates": ["23/08", "24/08"], "ville": "Marseille"}
+  ]
+}

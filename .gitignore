@@ -1,0 +1,7 @@
+.doit.db
+build/
+dist/
+node_modules/
+package-lock.json
+__pycache__/
+
