@@ -1,22 +1,29 @@
 import {feature} from 'topojson';
+import {drag} from 'd3-drag';
 import {json} from 'd3-request';
+import {queue} from 'd3-queue';
 import {geoProject} from 'd3-geo-projection';
 import {geoConicConformal, geoPath, geoIdentity} from 'd3-geo';
 import {line, curveCatmullRom, symbol} from 'd3-shape';
-import {select} from 'd3-selection';
+import {select, event as d3event} from 'd3-selection';
 
 import './main.css';
 
 const width = 800, height = 800;
 
-json('topology.json', function (err, topology) {
+
+queue()
+  .defer(json, 'topology.json')
+  .defer(getLabelPositions, 'label-positions.json')
+  .await(function (err, topology, labelPos) {
   if (err) {
-    console.error(err);
+    console.error('Got error');
+    console.log(err);
     return;
   }
 
   const features = ['frontieres', 'departements', 'est', 'ouest'].reduce(function (o, d) {
-    return Object.assign(o, {[d]: feature(topology, topology.objects[d])})
+    return Object.assign(o, {[d]: feature(topology, topology.objects[d])});
   }, {});
 
   // projection officielle pour les cartes de France
@@ -29,6 +36,15 @@ json('topology.json', function (err, topology) {
     return Object.assign(o, {[name]: geoProject(features[name], lambert93)});
   }, {});
 
+  labelPos = labelPos || {};
+  ['est', 'ouest'].map(function(caravane) {
+    for (let etape of projectedFeatures[caravane].features) {
+      if(!(etape.properties.ville in labelPos)) {
+        labelPos[etape.properties.ville] = etape.geometry.coordinates;
+      }
+    }
+  });
+    
   const lineGenerator = line().curve(curveCatmullRom.alpha(0.5))
     .x(d => d.geometry.coordinates[0])
     .y(d => d.geometry.coordinates[1]);
@@ -37,7 +53,9 @@ json('topology.json', function (err, topology) {
 
   const path = geoPath().projection(null);
 
-  const svg = select('#map').append('svg')
+  const app = select('#map');
+
+  const svg = app.append('svg')
     .attr('width', width)
     .attr('height', height)
     .attr('font-family', 'Montserrat,sans-serif');
@@ -61,23 +79,32 @@ json('topology.json', function (err, topology) {
   const etapes = svg.append('g').attr('class', 'etapes');
   const textes = svg.append('g').attr('class', 'textes');
 
-  const colors = {
-    'est': '#00afcb',
-    'ouest': '#c9442a'
-  };
+  const colors = [
+    '#00afcb',
+    '#c9442a'
+  ];
 
-  lignes.selectAll('path').data(['est', 'ouest'])
+  const lignesData = [
+    projectedFeatures['est'].features.slice(),
+    projectedFeatures['ouest'].features.slice()
+  ];
+  lignesData[0].splice(-1, 0, {geometry: {coordinates: [630, 660]}});
+  lignesData[1].splice(-1, 0, {geometry: {coordinates: [630, 670]}});
+
+  lignes.selectAll('path').data(lignesData)
     .enter()
     .append('path')
-    .attr('class', d => d)
-    .attr('d', d => lineGenerator(projectedFeatures[d].features))
+    .attr('d', lineGenerator)
     .attr('fill', 'none')
-    .attr('stroke', d => colors[d])
+    .attr('stroke', (d, i) => colors[i])
     .attr('stroke-width', 5);
 
   const etapeSymbol = symbol();
 
+  // éviter de rajouter deux fois Marseille
   projectedFeatures['est'].features.pop();
+
+  const dragger = drag().on("drag", dragged).container(textes.node());
 
   // étapes et texte :)
   ['est', 'ouest'].map(function (caravane) {
@@ -86,34 +113,60 @@ json('topology.json', function (err, topology) {
       .append('path').attr('class', caravane)
       .attr('d', etapeSymbol)
       .attr('transform', d => `translate(${d.geometry.coordinates[0]},${d.geometry.coordinates[1]})`);
-
-    const tGroup = textes.selectAll('.' + caravane).data(projectedFeatures[caravane].features)
-      .enter()
-      .append('g')
-      .attr('class', caravane);
-
-    tGroup.append('text')
-      .attr('class', 'ville')
-      .text(d => d.properties.ville)
-      .attr('dy', '0.3em')
-      .attr('font-weight', 700);
-
-    tGroup.append('text')
-      .attr('class', 'dates')
-      .attr('y', 20)
-      .attr('fill', '#848484')
-      .text(d => d.properties.dates.map(d => +d.split('/')[0]).join(' et ') + ' août');
-
-    tGroup.attr('transform', textPositioning(caravane));
   });
 
-  function textPositioning(caravane) {
-    if (caravane === 'ouest') {
-      return d => `translate(${d.geometry.coordinates[0] + 10},${d.geometry.coordinates[1]})`;
-    }
-    return function(d) {
-      const bbox = this.getBBox();
-      return `translate(${d.geometry.coordinates[0] - bbox.width - 15},${d.geometry.coordinates[1]})`;
-    };
+  const labels = projectedFeatures['est'].features.concat(projectedFeatures['ouest'].features).map(function(f) {
+    const ville = f.properties.ville;
+    const [x, y] = labelPos[ville];
+    return {ville, x, y, dates: f.properties.dates.map(d => +d.split('/')[0]).join(' et ') + ' août'};
+  });
+
+  const tGroup = textes.selectAll('.label-group').data(labels)
+    .enter()
+    .append('g')
+    .attr('transform', d => `translate(${d.x},${d.y})`)
+    .attr('class', `label-group`)
+    .call(dragger);
+
+  tGroup.append('text')
+    .attr('class', 'ville')
+    .text(d => d.ville)
+    .attr('dy', '0.3em')
+    .attr('font-weight', 700);
+
+  tGroup.append('text')
+    .attr('class', 'dates')
+    .attr('y', 20)
+    .attr('fill', '#848484')
+    .text(d => d.dates);
+
+  const labelsTextArea = app.append('textarea')
+    .attr('rows', '20')
+    .attr('cols', '50');
+
+  updateTextArea();
+
+  function updateTextArea() {
+    labelsTextArea.text(JSON.stringify(labelPos));
+  }
+
+  function dragged(d) {
+    select(this).attr("transform", `translate(${d.x = d3event.x},${d.y = d3event.y})`);
+    labelPos[d.ville] = [d3event.x, d3event.y];
+    updateTextArea();
   }
 });
+
+function getLabelPositions(filename, cb) {
+  json(filename, function(err, data) {
+    if (err) {
+      if (err.target.status === 404) {
+        cb(null, null);
+      } else {
+        cb(err);
+      }
+    } else {
+      cb(null, data);
+    }
+  });
+}
