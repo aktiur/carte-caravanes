@@ -4,7 +4,7 @@
     {"dates": ["07/08"], "ville": "Amiens"},
     {"dates": ["08/08"], "ville": "Lille"},
     {"dates": ["09/08"], "ville": "Valenciennes"},
-    {"dates": ["10/08"], "ville": "Charlesville-Mézières"},
+    {"dates": ["10/08"], "ville": "Charleville-Mézières"},
     {"dates": ["12/08"], "ville": "Metz"},
     {"dates": ["13/08"], "ville": "Nancy"},
     {"dates": ["14/08"], "ville": "Epinal"},
@@ -14,7 +14,7 @@
     {"dates": ["19/08"], "ville": "Saint-Etienne"},
     {"dates": ["20/08"], "ville": "Grenoble"},
     {"dates": ["21/08"], "ville": "Valence"},
-    {"dates": ["22/08"], "ville": "Avigon"},
+    {"dates": ["22/08"], "ville": "Avignon"},
     {"dates": ["23/08", "24/08"], "ville": "Marseille"}
   ],
   "ouest": [

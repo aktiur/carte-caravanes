@@ -10,6 +10,7 @@ import {select, event as d3event} from 'd3-selection';
 import './main.css';
 
 const width = 800, height = 800;
+const fontSize = 16;
 
 
 queue()
@@ -44,7 +45,7 @@ queue()
       }
     }
   });
-    
+
   const lineGenerator = line().curve(curveCatmullRom.alpha(0.5))
     .x(d => d.geometry.coordinates[0])
     .y(d => d.geometry.coordinates[1]);
@@ -58,7 +59,8 @@ queue()
   const svg = app.append('svg')
     .attr('width', width)
     .attr('height', height)
-    .attr('font-family', 'Montserrat,sans-serif');
+    .attr('font-family', 'Montserrat,sans-serif')
+    .attr('font-size', 16);
 
   // Frontière
   svg.append('path').attr('class', 'frontieres')
@@ -88,7 +90,7 @@ queue()
     projectedFeatures['est'].features.slice(),
     projectedFeatures['ouest'].features.slice()
   ];
-  lignesData[0].splice(-1, 0, {geometry: {coordinates: [630, 660]}});
+  lignesData[0].splice(-1, 0, {geometry: {coordinates: [634, 670]}});
   lignesData[1].splice(-1, 0, {geometry: {coordinates: [630, 670]}});
 
   lignes.selectAll('path').data(lignesData)
@@ -131,12 +133,11 @@ queue()
   tGroup.append('text')
     .attr('class', 'ville')
     .text(d => d.ville)
-    .attr('dy', '0.3em')
     .attr('font-weight', 700);
 
   tGroup.append('text')
     .attr('class', 'dates')
-    .attr('y', 20)
+    .attr('y', fontSize * 1.1)
     .attr('fill', '#848484')
     .text(d => d.dates);
 
