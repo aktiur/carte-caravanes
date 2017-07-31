@@ -46,7 +46,9 @@ queue()
     }
   });
 
-  const lineGenerator = line().curve(curveCatmullRom.alpha(0.5))
+  const curve = curveCatmullRom.alpha(1);
+
+  const lineGenerator = line().curve(curve)
     .x(d => d.geometry.coordinates[0])
     .y(d => d.geometry.coordinates[1]);
 
