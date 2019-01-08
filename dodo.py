@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import pandas as pd
 from doit.tools import run_once, create_folder
 from urllib.parse import quote_plus
 
